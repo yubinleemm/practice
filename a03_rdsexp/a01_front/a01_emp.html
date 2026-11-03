@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRMS - 사원 정보 관리</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+            --accent-cyan: #06b6d4;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* 헤더 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .title-group h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 검색 폼 영역 */
+        .search-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.8rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: #fff;
+            outline: none;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            transition: opacity 0.2s;
+        }
+
+        .btn-search:hover {
+            opacity: 0.9;
+        }
+
+        /* 데이터 테이블 */
+        .table-wrapper {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1rem 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1.1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* 직책 뱃지 디자인 */
+        .job-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .job-PRESIDENT { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .job-MANAGER   { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .job-ANALYST   { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .job-SALESMAN  { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .job-CLERK     { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .job-DEFAULT   { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+
+        .sal-val {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="title-group">
+                <h1>HR Management System</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Section -->
+    <div class="search-card">
+        <div class="search-grid">
+            <div class="input-group">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="ename" placeholder="사원명 검색 (예: SMITH)">
+            </div>
+            <div class="input-group">
+                <i class="fa-solid fa-briefcase"></i>
+                <input type="text" id="job" placeholder="직책 검색 (예: CLERK)">
+            </div>
+            <button type="button" class="btn-search" id="btnSearch">
+                <i class="fa-solid fa-magnifying-glass"></i> 검색
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>사원번호</th>
+                    <th>사원명</th>
+                    <th>직책</th>
+                    <th>급여</th>
+                </tr>
+            </thead>
+            <tbody id="empTableBody">
+                <!-- Ajax 결과가 여기에 들어갑니다 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document.body).ready(function() {
+        // 최초 로딩 시 전체 사원 목록 조회
+        fetchEmpList();
+
+        // 검색 버튼 클릭 시 조회
+        $("#btnSearch").click(function() {
+            fetchEmpList();
+        });
+
+        // 엔터키 입력 시 검색 실행
+        $("#ename, #job").keyup(function(e) {
+            if (e.keyCode === 13) {
+                fetchEmpList();
+            }
+        });
+    });
+
+    // jQuery Ajax 조회 함수
+    function fetchEmpList() {
+        const enameVal = $("#ename").val().trim();
+        const jobVal = $("#job").val().trim();
+
+        $.ajax({
+            url: "/api/emps",
+            type: "GET",
+            data: {
+                ename: enameVal,
+                job: jobVal
+            },
+            dataType: "json",
+            success: function(response) {
+                renderTable(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("데이터 조회 오류:", error);
+                $("#empTableBody").html(`
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:#f87171; padding:2rem;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> 데이터를 불러오는 중 오류가 발생했습니다.
+                        </td>
+                    </tr>
+                `);
+            }
+        });
+    }
+
+    // 테이블 렌더링 함수
+    function renderTable(data) {
+        const $tbody = $("#empTableBody");
+        $tbody.empty();
+
+        if (!data || data.length === 0) {
+            $tbody.append(`
+                <tr>
+                    <td colspan="4" style="text-align:center; color: var(--text-muted); padding: 2rem;">
+                        검색 결과가 없습니다.
+                    </td>
+                </tr>
+            `);
+            return;
+        }
+
+        $.each(data, function(index, emp) {
+            // 직책 뱃지 스타일 결정
+            const knownJobs = ['PRESIDENT', 'MANAGER', 'ANALYST', 'SALESMAN', 'CLERK'];
+            const badgeClass = knownJobs.includes(emp.job) ? emp.job : 'DEFAULT';
+            
+            // 급여 천단위 콤마 적용
+            const formattedSal = emp.sal ? Number(emp.sal).toLocaleString() : '0';
+
+            const row = `
+                <tr>
+                    <td><strong># ${emp.empno}</strong></td>
+                    <td>${emp.ename}</td>
+                    <td><span class="job-badge job-${badgeClass}">${emp.job}</span></td>
+                    <td class="sal-val">$ ${formattedSal}</td>
+                </tr>
+            `;
+            $tbody.append(row);
+        });
+    }
+</script>
+
+</body>
+</html>

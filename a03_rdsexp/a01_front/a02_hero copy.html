@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Hero & Skill Search Console</title>
+    <!-- Google Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Pretendard:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS & jQuery -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #0b0f19;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
+            color: #f3f4f6;
+            min-height: 100vh;
+        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        .glass-card {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .neon-border {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .neon-border:hover {
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: translateY(-4px);
+        }
+
+        /* Element Colors */
+        .elem-Fire { border-left: 4px solid #ef4444; background: linear-gradient(90deg, rgba(239, 68, 68, 0.1), transparent); }
+        .elem-Water { border-left: 4px solid #3b82f6; background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent); }
+        .elem-Earth { border-left: 4px solid #10b981; background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent); }
+        .elem-Lightning { border-left: 4px solid #eab308; background: linear-gradient(90deg, rgba(234, 179, 8, 0.1), transparent); }
+        .elem-Dark { border-left: 4px solid #a855f7; background: linear-gradient(90deg, rgba(168, 85, 247, 0.1), transparent); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="glass-card p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 border-b border-indigo-500/30">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-pink-500 flex items-center justify-center text-2xl text-white shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold font-orbitron tracking-wide bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+                        HERO SKILL SEARCH CONSOLE
+                    </h1>
+                    <p class="text-xs text-gray-400">MariaDB 기반 키워드 검색 시뮬레이터 (Client-Only)</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 text-sm">
+                <div class="glass-card px-4 py-2 rounded-xl text-center">
+                    <div class="text-xs text-gray-400">총 영웅/스킬</div>
+                    <div id="totalCount" class="font-bold text-indigo-400 font-orbitron text-lg">0</div>
+                </div>
+                <div class="glass-card px-4 py-2 rounded-xl text-center">
+                    <div class="text-xs text-gray-400">총 전투력</div>
+                    <div id="totalPower" class="font-bold text-pink-400 font-orbitron text-lg">0</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Form Card -->
+        <div class="glass-card p-6 rounded-2xl space-y-4">
+            <div class="flex items-center gap-2 text-indigo-400 text-sm font-semibold">
+                <i class="fa-solid fa-filter"></i>
+                <span>키워드 필터 (WHERE hero_name LIKE OR job_class LIKE)</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- 검색어 1: 영웅 별명 -->
+                <div class="relative">
+                    <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="inputHero" placeholder="영웅 별명 검색 (예: 아라곤, 엘프리데)" 
+                        class="w-full pl-11 pr-4 py-3 bg-gray-900/80 border border-gray-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-200 placeholder-gray-500">
+                </div>
+
+                <!-- 검색어 2: 직책 클래스 -->
+                <div class="relative">
+                    <i class="fa-solid fa-briefcase absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="inputJob" placeholder="직책 클래스 검색 (예: 기사, 마법사, 암살자)" 
+                        class="w-full pl-11 pr-4 py-3 bg-gray-900/80 border border-gray-700 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-gray-200 placeholder-gray-500">
+                </div>
+
+                <!-- 검색 및 초기화 버튼 -->
+                <div class="flex gap-2">
+                    <button id="btnSearch" class="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-600/30">
+                        <i class="fa-solid fa-magnifying-glass"></i> 검색하기
+                    </button>
+                    <button id="btnReset" class="px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold rounded-xl text-sm transition border border-gray-700">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Card Grid -->
+        <div id="cardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- JavaScript로 카드가 자동 생성됩니다 -->
+        </div>
+
+    </div>
+
+    <script>
+        // 프론트엔드 자체 데모 데이터 (MariaDB 테이블 결과 세트 구조)
+        const mockSkills = [
+            { id: 1, hero_name: '아라곤', job_class: '기사', skill_name: '화염 베기', skill_level: 45, power_score: 1200, element_type: 'Fire' },
+            { id: 2, hero_name: '아라곤', job_class: '기사', skill_name: '방어의 진형', skill_level: 30, power_score: 850, element_type: 'Earth' },
+            { id: 3, hero_name: '엘프리데', job_class: '마법사', skill_name: '체인 라이트닝', skill_level: 68, power_score: 2350, element_type: 'Lightning' },
+            { id: 4, hero_name: '엘프리데', job_class: '마법사', skill_name: '빙결 보호막', skill_level: 52, power_score: 1600, element_type: 'Water' },
+            { id: 5, hero_name: '그림자', job_class: '암살자', skill_name: '그림자 습격', skill_level: 80, power_score: 3100, element_type: 'Dark' },
+            { id: 6, hero_name: '그림자', job_class: '암살자', skill_name: '독침 투척', skill_level: 40, power_score: 950, element_type: 'Dark' },
+            { id: 7, hero_name: '카이론', job_class: '궁수', skill_name: '불꽃 화살', skill_level: 55, power_score: 1800, element_type: 'Fire' },
+            { id: 8, hero_name: '카이론', job_class: '궁수', skill_name: '바람의 발걸음', skill_level: 25, power_score: 600, element_type: 'Earth' }
+        ];
+
+        // 속성 아이콘 매핑
+        const elementIcons = {
+            'Fire': 'fa-fire text-red-500',
+            'Water': 'fa-droplet text-blue-400',
+            'Earth': 'fa-leaf text-emerald-400',
+            'Lightning': 'fa-bolt text-yellow-400',
+            'Dark': 'fa-skull text-purple-400'
+        };
+
+        $(document.body).ready(function() {
+            // 초기 카드 렌더링
+            renderCards(mockSkills);
+
+            // 검색 버튼 클릭 이벤트
+            $('#btnSearch').click(function() {
+                filterData();
+            });
+
+            // 입력창 키업(실시간 검색 및 엔터) 이벤트
+            $('#inputHero, #inputJob').keyup(function(e) {
+                filterData();
+            });
+
+            // 초기화 버튼
+            $('#btnReset').click(function() {
+                $('#inputHero').val('');
+                $('#inputJob').val('');
+                renderCards(mockSkills);
+            });
+        });
+
+        // 실시간 클라이언트 필터링 함수
+        function filterData() {
+            const heroKeyword = $('#inputHero').val().trim().toLowerCase();
+            const jobKeyword = $('#inputJob').val().trim().toLowerCase();
+
+            const filtered = mockSkills.filter(item => {
+                const matchHero = !heroKeyword || item.hero_name.toLowerCase().includes(heroKeyword);
+                const matchJob = !jobKeyword || item.job_class.toLowerCase().includes(jobKeyword);
+                return matchHero && matchJob;
+            });
+
+            renderCards(filtered);
+        }
+
+        // 카드 및 통계 렌더링
+        function renderCards(data) {
+            const $grid = $('#cardGrid');
+            $grid.empty();
+
+            let totalPower = 0;
+
+            if (data.length === 0) {
+                $grid.append(`
+                    <div class="col-span-full glass-card p-12 text-center text-gray-400 rounded-2xl">
+                        <i class="fa-solid fa-ghost text-4xl mb-3 text-gray-600"></i>
+                        <p class="text-base font-medium">검색 조건에 일치하는 영웅이나 스킬이 없습니다.</p>
+                    </div>
+                `);
+            } else {
+                $.each(data, function(idx, item) {
+                    totalPower += item.power_score;
+                    const iconClass = elementIcons[item.element_type] || 'fa-atom text-gray-400';
+
+                    const cardHtml = `
+                        <div class="glass-card neon-border rounded-2xl p-5 relative overflow-hidden elem-${item.element_type}">
+                            <!-- Header Info -->
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-gray-800 text-indigo-300 border border-gray-700">
+                                        ${item.job_class}
+                                    </span>
+                                    <h3 class="text-lg font-bold text-white mt-1 flex items-center gap-2">
+                                        ${item.hero_name}
+                                    </h3>
+                                </div>
+                                <div class="text-xl">
+                                    <i class="fa-solid ${iconClass}"></i>
+                                </div>
+                            </div>
+
+                            <!-- Skill Stats -->
+                            <div class="bg-gray-900/60 rounded-xl p-3 my-3 space-y-2 border border-gray-800/80">
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-400">스킬명</span>
+                                    <span class="font-bold text-gray-200">${item.skill_name}</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-400">스킬 레벨</span>
+                                    <span id="lvl-${item.id}" class="font-orbitron font-bold text-amber-400">Lv. ${item.skill_level}</span>
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-400">전투력 (Power)</span>
+                                    <span id="pwr-${item.id}" class="font-orbitron font-bold text-indigo-400">${item.power_score.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            <!-- Enhance Action Button -->
+                            <button onclick="enhanceSkill(${item.id})" 
+                                class="w-full py-2 bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/40 text-indigo-200 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> 스킬 강화하기
+                            </button>
+                        </div>
+                    `;
+                    $grid.append(cardHtml);
+                });
+            }
+
+            // 헤더 통계 업데이트
+            $('#totalCount').text(data.length);
+            $('#totalPower').text(totalPower.toLocaleString());
+        }
+
+        // 스킬 강화 클릭 미니이벤트 (효과음 + 포인트 상승)
+        function enhanceSkill(id) {
+            const item = mockSkills.find(s => s.id === id);
+            if (item) {
+                item.skill_level += 1;
+                item.power_score += Math.floor(Math.random() * 100) + 50;
+
+                // UI 동적 갱신
+                $(`#lvl-${id}`).text(`Lv. ${item.skill_level}`).addClass('animate-bounce');
+                $(`#pwr-${id}`).text(item.power_score.toLocaleString());
+
+                setTimeout(() => {
+                    $(`#lvl-${id}`).removeClass('animate-bounce');
+                }, 1000);
+
+                // 웹 효과음 재생 (Web Audio API)
+                playEnhanceSound();
+                filterData(); // 통계 재계산
+            }
+        }
+
+        // Web Audio API 단순 성공 효과음
+        function playEnhanceSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15);
+            } catch (e) {
+                console.log('Audio Context error');
+            }
+        }
+    </script>
+</body>
+</html>
